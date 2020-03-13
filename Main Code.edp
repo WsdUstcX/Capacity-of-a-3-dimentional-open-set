@@ -1,0 +1,127 @@
+// Dimension Constants
+real R=5; // on définit la taille de la boîte
+real rv=1;// le demi grand axe vertical
+
+int dirichlet = 1;  // La condition à l'infini
+int neumann = 0;  // La condition à r=0
+int omega = 2; //La condition sur grand omega
+
+// On définit les bords sauf le bord ellipsoïde
+border a1(t=0,1){x=0; y=-rv-t*(R-rv); label=neumann;}
+border a2(t=0,1){x=t*R;y=-R; label=dirichlet;}
+border a3(t=-1,1){x=R;y=t*R; label=dirichlet;}
+border a4(t=1,0){x=t*R;y=R; label=dirichlet;}
+border a5(t=1,0){x=0;y=rv+t*(R-rv); label=neumann;}
+
+// r0=0.5
+{
+real r0=0.5;
+// On définit le bord ellipsoïde
+border Omega(t=0,pi){x=sin(t)*r0;y=cos(t)*rv; label=omega;}
+// Maillage P1
+mesh Th = buildmesh(a1(40)+a2(50)+a3(100)+a4(50)+a5(40)+Omega(20));
+fespace Vh(Th,P1);
+Vh uh,vh;
+// On définit la formulation variationnelle
+problem Fv(uh,vh)
+= int2d(Th)(x*dx(uh)*dx(vh) + x*dy(uh)*dy(vh)) // bilinear form - int2d(Th)(f*vh) // linear form
++on(dirichlet,uh=0)+on(omega,uh=1); // boundary
+//conditions
+Fv;
+// On calcule le quotient entre C et V^(1/3)
+real C=2*pi*int2d(Th)(x*dx(uh)*dx(uh)+x*dy(uh)*dy(uh));
+real V=4.0/3*pi*rv*r0*r0;
+real rapport=C/pow(V,1.0/3);
+cout <<"r0="<<r0<<endl;
+cout <<"C="<<C<<endl;
+cout <<"V="<<V<<endl;
+cout <<"rapport="<<rapport<<endl;
+
+plot(Th,wait=1,cmm="maillage avec r0=0.5");
+plot(uh,wait=1,fill=1,dim=2,value=10,cmm="solution avec r0=0.5",ps="sl1.eps");
+}
+
+// r0=1
+{
+real r0=1;
+// On définit le bord ellipsoïde
+border Omega(t=0,pi){x=sin(t)*r0;y=cos(t)*rv; label=omega;}
+// Maillage P1
+mesh Th = buildmesh(a1(40)+a2(50)+a3(100)+a4(50)+a5(40)+Omega(20));
+fespace Vh(Th,P1);
+Vh uh,vh;
+// On définit la formulation variationnelle
+problem Fv(uh,vh)
+= int2d(Th)(x*dx(uh)*dx(vh) + x*dy(uh)*dy(vh)) // bilinear form - int2d(Th)(f*vh) // linear form
++on(dirichlet,uh=0)+on(omega,uh=1); // boundary
+//conditions
+Fv;
+// On calcule le quotient entre C et V^(1/3)
+real C=2*pi*int2d(Th)(x*dx(uh)*dx(uh)+x*dy(uh)*dy(uh));
+real V=4.0/3*pi*rv*r0*r0;
+real rapport=C/pow(V,1.0/3);
+cout <<"r0="<<r0<<endl;
+cout <<"C="<<C<<endl;
+cout <<"V="<<V<<endl;
+cout <<"rapport="<<rapport<<endl;
+
+plot(Th,wait=1,cmm="maillage avec r0=1");
+plot(uh,wait=1,fill=1,dim=2,value=10,cmm="solution avec r0=1",ps="sl2.eps");
+}
+
+// r0=2
+{
+real r0=2;
+// On définit le bord ellipsoïde
+border Omega(t=0,pi){x=sin(t)*r0;y=cos(t)*rv; label=omega;}
+// Maillage P1
+mesh Th = buildmesh(a1(40)+a2(50)+a3(100)+a4(50)+a5(40)+Omega(20));
+fespace Vh(Th,P1);
+Vh uh,vh;
+// On définit la formulation variationnelle
+problem Fv(uh,vh)
+= int2d(Th)(x*dx(uh)*dx(vh) + x*dy(uh)*dy(vh)) // bilinear form - int2d(Th)(f*vh) // linear form
++on(dirichlet,uh=0)+on(omega,uh=1); // boundary
+//conditions
+Fv;
+// On calcule le quotient entre C et V^(1/3)
+real C=2*pi*int2d(Th)(x*dx(uh)*dx(uh)+x*dy(uh)*dy(uh));
+real V=4.0/3*pi*rv*r0*r0;
+real rapport=C/pow(V,1.0/3);
+cout <<"r0="<<r0<<endl;
+cout <<"C="<<C<<endl;
+cout <<"V="<<V<<endl;
+cout <<"rapport="<<rapport<<endl;
+
+plot(Th,wait=1,cmm="maillage avec r0=2");
+plot(uh,wait=1,fill=1,dim=2,value=10,cmm="solution avec r0=2",ps="sl3.eps");
+}
+
+//la courbe
+{
+real[int] r=0.5:0.01:2.0; //On définit 151 points entre r0=0.5 et r0=2.0
+real[int] I(151);
+for (int i=0;i<151;i=i+1){
+    real r0=r[i];
+    border Omega(t=0,pi){x=sin(t)*r0;y=cos(t)*rv; label=omega;}
+    mesh Th = buildmesh(a1(40)+a2(50)+a3(100)+a4(50)+a5(40)+Omega(20));
+
+    fespace Vh(Th,P1);
+    Vh uh,vh;
+
+    problem Fv(uh,vh)
+    = int2d(Th)(x*dx(uh)*dx(vh) + x*dy(uh)*dy(vh)) // bilinear form - int2d(Th)(f*vh) // linear form
+    +on(dirichlet,uh=0)+on(omega,uh=1); // boundary
+    //conditions
+    Fv;
+    real C=2*pi*int2d(Th)(x*dx(uh)*dx(uh)+x*dy(uh)*dy(uh));
+    real V=4.0/3*pi*rv*r0*r0;
+    real rapport=C/pow(V,1.0/3);
+    I[i]=rapport;
+  }
+  ofstream ofile("Myfile.txt");
+  //On exporte le quotient pour chaque r dans Myfile et trace la courbe avec Python
+  for(int i=0;i<151;i=i+1){
+    ofile <<I[i]<<endl;
+  }
+}

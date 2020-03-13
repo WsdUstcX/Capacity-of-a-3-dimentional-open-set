@@ -1,0 +1,40 @@
+real R=10;
+real rv=1;
+
+int dirichlet = 1;
+int neumann = 0;
+int omega = 2;
+
+border a1(t=0,1){x=0; y=-rv-t*(R-rv); label=neumann;}
+border a2(t=0,1){x=t*R;y=-R; label=dirichlet;}
+border a3(t=-1,1){x=R;y=t*R; label=dirichlet;}
+border a4(t=1,0){x=t*R;y=R; label=dirichlet;}
+border a5(t=1,0){x=0;y=rv+t*(R-rv); label=neumann;}
+
+//la courbe
+{
+real[int] r=0.5:0.01:2.0;
+real[int] I(151);
+for (int i=0;i<151;i=i+1){
+    real r0=r[i];
+    border Omega(t=0,pi){x=sin(t)*r0;y=cos(t)*rv; label=omega;}
+    mesh Th = buildmesh(a1(90)+a2(100)+a3(200)+a4(100)+a5(90)+Omega(20));
+
+    fespace Vh(Th,P1);
+    Vh uh,vh;
+
+    problem Fv(uh,vh)
+    = int2d(Th)(x*dx(uh)*dx(vh) + x*dy(uh)*dy(vh)) // bilinear form - int2d(Th)(f*vh) // linear form
+    +on(dirichlet,uh=0)+on(omega,uh=1); // boundary
+    //conditions
+    Fv;
+    real C=2*pi*int2d(Th)(x*dx(uh)*dx(uh)+x*dy(uh)*dy(uh));
+    real V=4.0/3*pi*rv*r0*r0;
+    real rapport=C/pow(V,1.0/3);
+    I[i]=rapport;
+  }
+  ofstream ofile("Myfile R=10.txt");
+  for(int i=0;i<151;i=i+1){
+    ofile <<I[i]<<endl;
+  }
+}
